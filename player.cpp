@@ -33,14 +33,27 @@ Player::Player(Side side) {
 Player::~Player() {
 }
 
-Move heuristic()
+int heuristic(Move m, Side s)
 {
-	// board position score = (# stones you have vs
-	// stones your opponent has
-	
-	int score = 0;
-	
+    int numwhite = b.countWhite();
+    int numblack = b.countBlack();    
+    
+	Board *newb = b.copy();
+    (*newb).doMove(m, s);
+    int newnumwhite = (*newb).countWhite();
+    int newnumblack = (*newb).countBlack();
+    
+	if (s == BLACK)
+    {
+        return numblack - numnewblack;
+    }
+
+    else if (s == WHITE)
+    {
+        return numwhite - numnewwhite;
+    }       
 }
+
 /*
  * Compute the next move given the opponent's last move. Your AI is
  * expected to keep track of the board on its own. If this is the first move,
@@ -60,5 +73,50 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
      * TODO: Implement how moves your AI should play here. You should first
      * process the opponent's opponents move before calculating your own move
      */ 
-    return NULL;
+    int score = 0;
+    Move* nextmove;
+
+    if(s == WHITE){
+        nextmove->setX(4);
+        nextmove->setY(3);
+	}
+	else{
+		nextmove->setX(3);
+		nextmove->setY(3);
+	}
+
+	// checking if opponent move is legal
+	if (b.onBoard(opponentsMove.getX(), opponentsMove.getY()) && ! b.occupied(opponentsMove.getX(), opponentsMove.getY())
+	{
+			// find opponent’s side
+			Side other = (s == BLACK) ? WHITE : BLACK;
+			// make opponent’s move
+			b.doMove(opponentsMove, other);
+			
+			// check if board has move for player’s side
+			if (b.hasMoves(s))
+			{
+				for (int x = 0; x < 8; x++)
+				{
+					for (int y = 0; y < 8; y++)
+					{
+						if (!b.occupied(x, y))
+						{
+							Move* currmove = new Move(x, y);
+							if (checkMove(currmove, s) == true)
+							{
+								int newscore = heuristic(currmove, s);
+								if (newscore > score)
+								{
+									nextmove = currmove;
+									score = newscore;
+								}    
+							}
+						}
+					}
+				}
+			}
+	}
+
+	return nextmove;
 }
