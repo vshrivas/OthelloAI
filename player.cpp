@@ -34,6 +34,35 @@ Player::~Player() {
 	//delete b;
 }
 
+Move* Player::minmax(Move* oppenentMove, int msLeft){
+	// 
+	vector <Move*> currmoves;
+	
+	for(int x = 0; x < 8; x++){
+		for(int y =0; y < 8; y++){
+			Move* m = new Move(x,y);
+			if(b.checkMove(m, s)){
+				currmoves.push_back(m);
+			}
+		}
+	}
+	
+	for(int i=0; i < currmoves.size(); i++){
+		Board* board = b.copy();
+		board.doMove(currmoves[i], s);
+		
+			for(int x = 0; x < 8; x++){
+				for(int y =0; y < 8; y++){
+					Move* oppm = new Move(x,y);
+					if(board.checkMove(oppm, s)){
+						currmoves.push_back(oppm);
+					}
+				}
+			}
+	}
+	
+}
+
 int Player::heuristic(Move* m, Side s)
 {
     /*int numwhite = b.countWhite();
