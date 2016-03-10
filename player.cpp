@@ -36,25 +36,43 @@ Player::~Player() {
 
 int Player::heuristic(Move* m, Side s)
 {
-    int numwhite = b.countWhite();
-    int numblack = b.countBlack();    
+    /*int numwhite = b.countWhite();
+    int numblack = b.countBlack();  */  
     
 	Board *newb = b.copy();
     newb->doMove(m, s);
     
     int newnumwhite = newb->countWhite();
     int newnumblack = newb->countBlack();
+    int score = 0;
     
     delete newb;
     
 	if (s == BLACK)
     {
-        return newnumblack - numblack;
+       // return newnumblack - numblack;
+       score = newnumblack - newnumwhite;
     }
     else{
-		return newnumwhite - numwhite;
+		//return newnumwhite - numwhite;
+		score = newnumwhite - newnumblack;
 	}
-       
+        if((m->getX() == 0 || m->getX() == 7) && (m->getY() == 0 || m->getY() == 7)){
+		   score += 20;
+	   }
+	   else if((m->getX() == 0 || m->getX() == 1) && (m->getY() == 0 || m->getY() == 1)){
+			score -= 20;
+		}
+		else if((m->getX() == 0 || m->getX() == 1) && (m->getY() == 6 || m->getY() == 7)){
+			score -= 20;
+		}
+		else if((m->getX() == 6 || m->getX() == 7) && (m->getY() == 0 || m->getY() == 1)){
+			score -= 20;
+		}
+		else if((m->getX() == 6 || m->getX() == 7) && (m->getY() == 6 || m->getY() == 7)){
+			score -= 20;
+		}
+		return score; 
 }
 
 /*
@@ -78,12 +96,12 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
      */ 
 
 
-	cerr << "starting do move" << endl;
+	//cerr << "starting do move" << endl;
     int score = -1000000;
     Move* nextmove = NULL;
 
-	cerr << "next move created" << endl;
-	cerr << "default move set" << endl;
+	//cerr << "next move created" << endl;
+	//cerr << "default move set" << endl;
 
 
 
@@ -93,11 +111,11 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
 				b.doMove(opponentsMove, other); 
 			}
 			
-			cerr << "made opponent's move" << endl;
+			//cerr << "made opponent's move" << endl;
 			// check if board has move for player’s side
 			if (b.hasMoves(s))
 			{
-				cerr << "entering move calc" << endl;
+				//cerr << "entering move calc" << endl;
 				for (int x = 0; x < 8; x++)
 				{
 					for (int y = 0; y < 8; y++)
@@ -107,7 +125,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
 							if (b.checkMove(currmove, s))
 							{
 								int newscore = heuristic(currmove, s);
-								cerr << newscore << endl;
+								//cerr << newscore << endl;
 								
 								if (newscore >= score)
 								{
