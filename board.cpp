@@ -1,5 +1,4 @@
 #include "board.h"
-
 /*
  * Make a standard 8x8 othello board and initialize it to the standard setup.
  */

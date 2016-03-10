@@ -1,4 +1,6 @@
 #include "player.h"
+#include <vector>
+using namespace std;
 
 /* CHANGE BY VAISHNAVI*/
 /*
@@ -9,10 +11,15 @@
  * on (BLACK or WHITE) is passed in as "side". The constructor must finish 
  * within 30 seconds.
  */
+
+Board b;
+Side s;
+
 Player::Player(Side side) {
     // Will be set to true in test_minimax.cpp.
     testingMinimax = false;
-
+    b = new Board;
+    s = side;
     /* 
      * TODO: Do any initialization you need to do here (setting up the board,
      * precalculating things, etc.) However, remember that you will only have
@@ -26,6 +33,14 @@ Player::Player(Side side) {
 Player::~Player() {
 }
 
+Move heuristic()
+{
+	// board position score = (# stones you have vs
+	// stones your opponent has
+	
+	int score = 0;
+	
+}
 /*
  * Compute the next move given the opponent's last move. Your AI is
  * expected to keep track of the board on its own. If this is the first move,
