@@ -1,5 +1,6 @@
 #include "player.h"
 #include <vector>
+#include <iostream>
 using namespace std;
 
 /* CHANGE BY VAISHNAVI*/
@@ -18,7 +19,6 @@ Side s;
 Player::Player(Side side) {
     // Will be set to true in test_minimax.cpp.
     testingMinimax = false;
-    b = new Board;
     s = side;
     /* 
      * TODO: Do any initialization you need to do here (setting up the board,
@@ -31,27 +31,30 @@ Player::Player(Side side) {
  * Destructor for the player.
  */
 Player::~Player() {
+	//delete b;
 }
 
-int heuristic(Move m, Side s)
+int Player::heuristic(Move* m, Side s)
 {
     int numwhite = b.countWhite();
     int numblack = b.countBlack();    
     
 	Board *newb = b.copy();
-    (*newb).doMove(m, s);
-    int newnumwhite = (*newb).countWhite();
-    int newnumblack = (*newb).countBlack();
+    newb->doMove(m, s);
+    
+    int newnumwhite = newb->countWhite();
+    int newnumblack = newb->countBlack();
+    
+    delete newb;
     
 	if (s == BLACK)
     {
-        return numblack - numnewblack;
+        return newnumblack - numblack;
     }
-
-    else if (s == WHITE)
-    {
-        return numwhite - numnewwhite;
-    }       
+    else{
+		return newnumwhite - numwhite;
+	}
+       
 }
 
 /*
@@ -73,50 +76,55 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
      * TODO: Implement how moves your AI should play here. You should first
      * process the opponent's opponents move before calculating your own move
      */ 
-    int score = 0;
-    Move* nextmove;
 
-    if(s == WHITE){
-        nextmove->setX(4);
-        nextmove->setY(3);
-	}
-	else{
-		nextmove->setX(3);
-		nextmove->setY(3);
-	}
 
-	// checking if opponent move is legal
-	if (b.onBoard(opponentsMove.getX(), opponentsMove.getY()) && ! b.occupied(opponentsMove.getX(), opponentsMove.getY())
-	{
-			// find opponent’s side
+	cerr << "starting do move" << endl;
+    int score = -1000000;
+    Move* nextmove = NULL;
+
+	cerr << "next move created" << endl;
+	cerr << "default move set" << endl;
+
+
+
 			Side other = (s == BLACK) ? WHITE : BLACK;
 			// make opponent’s move
-			b.doMove(opponentsMove, other);
+			if(opponentsMove != NULL){
+				b.doMove(opponentsMove, other); 
+			}
 			
+			cerr << "made opponent's move" << endl;
 			// check if board has move for player’s side
 			if (b.hasMoves(s))
 			{
+				cerr << "entering move calc" << endl;
 				for (int x = 0; x < 8; x++)
 				{
 					for (int y = 0; y < 8; y++)
 					{
-						if (!b.occupied(x, y))
-						{
+						
 							Move* currmove = new Move(x, y);
-							if (checkMove(currmove, s) == true)
+							if (b.checkMove(currmove, s))
 							{
 								int newscore = heuristic(currmove, s);
-								if (newscore > score)
+								cerr << newscore << endl;
+								
+								if (newscore >= score)
 								{
+									//delete nextmove;
 									nextmove = currmove;
 									score = newscore;
-								}    
+								} 
+								else{
+									delete currmove;
+								}
+								
 							}
-						}
 					}
 				}
 			}
-	}
+	b.doMove(nextmove, s);
 
 	return nextmove;
+	//return new Move(3,2);
 }
