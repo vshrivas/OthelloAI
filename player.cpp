@@ -18,7 +18,7 @@ Side s;
 
 Player::Player(Side side) {
     // Will be set to true in test_minimax.cpp.
-    testingMinimax = true;
+    testingMinimax = false;
     s = side;
     /* 
      * TODO: Do any initialization you need to do here (setting up the board,
@@ -31,7 +31,6 @@ Player::Player(Side side) {
  * Destructor for the player.
  */
 Player::~Player() {
-	//delete b;
 }
 
 Move* Player::minmax(Move* oppenentMove, int msLeft){
@@ -93,8 +92,6 @@ Move* Player::minmax(Move* oppenentMove, int msLeft){
 
 int Player::heuristic_mm(Move* m, Side s, Board *board)
 {
-    /*int numwhite = b.countWhite();
-    int numblack = b.countBlack();  */  
     
 	Board *newb = board->copy();
     newb->doMove(m, s);
@@ -107,11 +104,9 @@ int Player::heuristic_mm(Move* m, Side s, Board *board)
     
 	if (s == BLACK)
     {
-       // return newnumblack - numblack;
        score = newnumblack - newnumwhite;
     }
     else{
-		//return newnumwhite - numwhite;
 		score = newnumwhite - newnumblack;
 	}
         if((m->getX() == 0 || m->getX() == 7) && (m->getY() == 0 || m->getY() == 7)){
@@ -148,11 +143,9 @@ int Player::heuristic(Move* m, Side s)
     
 	if (s == BLACK)
     {
-       // return newnumblack - numblack;
        score = newnumblack - newnumwhite;
     }
     else{
-		//return newnumwhite - numwhite;
 		score = newnumwhite - newnumblack;
 	}
         if((m->getX() == 0 || m->getX() == 7) && (m->getY() == 0 || m->getY() == 7)){
@@ -197,12 +190,8 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
 	{
 		return minmax(opponentsMove, msLeft);
 	}
-	//cerr << "starting do move" << endl;
     int score = -1000000;
     Move* nextmove = NULL;
-
-	//cerr << "next move created" << endl;
-	//cerr << "default move set" << endl;
 
 
 			Side other = (s == BLACK) ? WHITE : BLACK;
@@ -211,11 +200,9 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
 				b.doMove(opponentsMove, other); 
 			}
 			
-			//cerr << "made opponent's move" << endl;
 			// check if board has move for player’s side
 			if (b.hasMoves(s))
 			{
-				//cerr << "entering move calc" << endl;
 				for (int x = 0; x < 8; x++)
 				{
 					for (int y = 0; y < 8; y++)
@@ -225,11 +212,9 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
 							if (b.checkMove(currmove, s))
 							{
 								int newscore = heuristic(currmove, s);
-								//cerr << newscore << endl;
 								
 								if (newscore >= score)
 								{
-									//delete nextmove;
 									nextmove = currmove;
 									score = newscore;
 								} 
@@ -244,5 +229,4 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
 	b.doMove(nextmove, s);
 
 	return nextmove;
-	//return new Move(3,2);
 }
