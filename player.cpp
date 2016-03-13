@@ -18,7 +18,7 @@ Side s;
 
 Player::Player(Side side) {
     // Will be set to true in test_minimax.cpp.
-    testingMinimax = false;
+    testingMinimax = true;
     s = side;
     /* 
      * TODO: Do any initialization you need to do here (setting up the board,
@@ -31,14 +31,14 @@ Player::Player(Side side) {
  * Destructor for the player.
  */
 Player::~Player() {
+	//delete b;
 }
 
 Move* Player::minmax(Move* oppenentMove, int msLeft){
 	// 
-	vector <Move*> currmoves;
-	vector <int> currmoves_scores;
-	
-	
+	vector <Move*> currmoves; // for our moves
+	vector <int> currmoves_scores; // scores we would have if our opponents moved
+
 	for(int x = 0; x < 8; x++){
 		for(int y =0; y < 8; y++){
 			Move* m = new Move(x,y);
@@ -47,6 +47,11 @@ Move* Player::minmax(Move* oppenentMove, int msLeft){
 			}
 		}
 	}
+	if (currmoves.size() == 0)
+	{
+		return NULL;
+	}
+	cerr << " size of currmoves " << currmoves.size() << endl;
 	
 	for(unsigned int i=0; i < currmoves.size(); i++){
 		Board* board = b.copy();
@@ -57,9 +62,10 @@ Move* Player::minmax(Move* oppenentMove, int msLeft){
 		{
 			for(int y =0; y < 8; y++)
 			{
-				Move* oppm = new Move(x,y);
+				Move* oppm = new Move(x,y); // moves that opponent makes
 				if(board->checkMove(oppm, other))
 				{
+					// returns our score based on opponents move
 					int newscore = heuristic_mm(oppm, s, board);
 							
 					if (newscore < min)
@@ -86,12 +92,20 @@ Move* Player::minmax(Move* oppenentMove, int msLeft){
 			todo = currmoves[i];
 		}
 	}
+	if (todo != NULL)
+	{
+		b.doMove(todo, s);
+	}
+	
+	cerr << todo->getX() << endl;
 	return todo;
 	
 }
 
 int Player::heuristic_mm(Move* m, Side s, Board *board)
 {
+    /*int numwhite = b.countWhite();
+    int numblack = b.countBlack();  */  
     
 	Board *newb = board->copy();
     newb->doMove(m, s);
@@ -104,9 +118,11 @@ int Player::heuristic_mm(Move* m, Side s, Board *board)
     
 	if (s == BLACK)
     {
+       // return newnumblack - numblack;
        score = newnumblack - newnumwhite;
     }
     else{
+		//return newnumwhite - numwhite;
 		score = newnumwhite - newnumblack;
 	}
         if((m->getX() == 0 || m->getX() == 7) && (m->getY() == 0 || m->getY() == 7)){
@@ -143,9 +159,11 @@ int Player::heuristic(Move* m, Side s)
     
 	if (s == BLACK)
     {
+       // return newnumblack - numblack;
        score = newnumblack - newnumwhite;
     }
     else{
+		//return newnumwhite - numwhite;
 		score = newnumwhite - newnumblack;
 	}
         if((m->getX() == 0 || m->getX() == 7) && (m->getY() == 0 || m->getY() == 7)){
@@ -185,24 +203,29 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
      * TODO: Implement how moves your AI should play here. You should first
      * process the opponent's opponents move before calculating your own move
      */ 
+	//cerr << "starting do move" << endl;
+    int score = -1000000;
+    Move* nextmove = NULL;
 
+	//cerr << "next move created" << endl;
+	//cerr << "default move set" << endl;
+	
+	Side other = (s == BLACK) ? WHITE : BLACK;
+	// make opponent’s move
+	if(opponentsMove != NULL){
+		b.doMove(opponentsMove, other); 
+	}
+	
 	if (testingMinimax)
 	{
 		return minmax(opponentsMove, msLeft);
 	}
-    int score = -1000000;
-    Move* nextmove = NULL;
-
-
-			Side other = (s == BLACK) ? WHITE : BLACK;
-			// make opponent’s move
-			if(opponentsMove != NULL){
-				b.doMove(opponentsMove, other); 
-			}
 			
+			//cerr << "made opponent's move" << endl;
 			// check if board has move for player’s side
 			if (b.hasMoves(s))
 			{
+				//cerr << "entering move calc" << endl;
 				for (int x = 0; x < 8; x++)
 				{
 					for (int y = 0; y < 8; y++)
@@ -212,9 +235,11 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
 							if (b.checkMove(currmove, s))
 							{
 								int newscore = heuristic(currmove, s);
+								//cerr << newscore << endl;
 								
 								if (newscore >= score)
 								{
+									//delete nextmove;
 									nextmove = currmove;
 									score = newscore;
 								} 
@@ -229,4 +254,5 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
 	b.doMove(nextmove, s);
 
 	return nextmove;
+	//return new Move(3,2);
 }
