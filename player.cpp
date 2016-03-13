@@ -34,7 +34,7 @@ Player::~Player() {
 	//delete b;
 }
 
-Move* Player::minmax(Move* oppenentMove, int msLeft){
+Move* Player::minmax(Move* opponentMove, int msLeft){
 	// 
 	vector <Move*> currmoves; // for our moves
 	vector <int> currmoves_scores; // scores we would have if our opponents moved
