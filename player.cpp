@@ -1,5 +1,4 @@
 #include "player.h"
-#include <vector>
 #include <iostream>
 using namespace std;
 
@@ -34,115 +33,167 @@ Player::~Player() {
 	//delete b;
 }
 
-Move* Player::minmax(Move* opponentMove, int msLeft){
-	// 
-	vector <Move*> currmoves; // for our moves
-	vector <int> currmoves_scores; // scores we would have if our opponents moved
-
+Move* Player::minmaxmain(Move* opponentMove, int msLeft){
+	vector <Move*> moves;
+	vector <int> scores;
+	cerr << "main function " << endl;
 	for(int x = 0; x < 8; x++){
 		for(int y =0; y < 8; y++){
+			cerr << "first for loop" << endl;
+			vector<Board*> boards;
 			Move* m = new Move(x,y);
+			Board* board = b.copy();
 			if(b.checkMove(m, s)){
-				currmoves.push_back(m);
+				cerr << "check move start" << endl;
+				board->doMove(m, s);
+				boards.push_back(board);
+				moves.push_back(m);
+				scores.push_back(minmaxhelper(boards, 3, 0));
+				cerr << scores[scores.size()-1] << endl;
+				cerr << "check move end" << endl;
 			}
 		}
 	}
-	if (currmoves.size() == 0)
-	{
-		return NULL;
-	}
-	cerr << " size of currmoves " << currmoves.size() << endl;
-	
-	for(unsigned int i=0; i < currmoves.size(); i++){
-		Board* board = b.copy();
-		board->doMove(currmoves[i], s);
-		int min = 1000000;
-		Side other = (s == BLACK) ? WHITE : BLACK;
-		for(int x = 0; x < 8; x++)
+
+		int max = -100000;
+		Move *todo = NULL;
+		for (unsigned int i = 0; i < scores.size(); i++)
 		{
-			for(int y =0; y < 8; y++)
+			cerr << "check max " << endl;
+			if (scores[i] > max)
 			{
-				Move* oppm = new Move(x,y); // moves that opponent makes
-				if(board->checkMove(oppm, other))
+				max = scores[i];
+				todo = moves[i];
+			}
+		}
+		if (todo != NULL)
+		{
+			b.doMove(todo, s);
+		}
+		
+		cerr << todo->getX() << endl;
+		return todo;
+	
+}
+
+int Player::minmaxhelper(vector<Board*> boards, int ply, int currply){
+	// base case at ply
+	if(currply == ply){
+		int min = 10000000;
+		cerr << "base case start " << endl;
+		for (unsigned int i = 0; i < boards.size(); i++)
+		{
+			int score = heuristic_mm(s, boards[i]);
+			if (score < min)
+			{
+				min = score;
+			}
+		}
+		return min;
+	}
+	else{
+		vector <Board*> oppboards;
+		vector <Board*> ourboards;
+		for(unsigned int i=0; i < boards.size(); i++){
+			Side other = (s == BLACK) ? WHITE : BLACK;
+			for(int x = 0; x < 8; x++)
+			{
+				for(int y =0; y < 8; y++)
 				{
-					// returns our score based on opponents move
-					int newscore = heuristic_mm(oppm, s, board);
-							
-					if (newscore < min)
+					Move* oppm = new Move(x,y); // moves that opponent makes
+					if(boards[i]->checkMove(oppm, other))
 					{
-						min = newscore;
-					} 
-					else
-					{
-						delete oppm;
+						Board* oppboard = boards[i]->copy();
+						oppboard->doMove(oppm, other);
+						oppboards.push_back(oppboard);				
 					}
 				}
 			}
 		}
-		currmoves_scores.push_back(min);
-	}
-	
-	int max = -100000;
-	Move *todo = NULL;
-	for (unsigned int i = 0; i < currmoves_scores.size(); i++)
-	{
-		if (currmoves_scores[i] > max)
-		{
-			max = currmoves_scores[i];
-			todo = currmoves[i];
+		
+		
+		for(unsigned int i=0; i < oppboards.size(); i++){
+			for(int x = 0; x < 8; x++)
+			{
+				for(int y =0; y < 8; y++)
+				{
+					Move* ourmove = new Move(x,y); // moves that we make
+					if(oppboards[i]->checkMove(ourmove, s))
+					{
+						Board* ourboard = oppboards[i]->copy();
+						ourboard->doMove(ourmove, s);
+						ourboards.push_back(ourboard);				
+					}
+				}
+			}
 		}
+		
+		return minmaxhelper(ourboards, ply, currply+1);
+		
+		
 	}
-	if (todo != NULL)
-	{
-		b.doMove(todo, s);
-	}
-	
-	cerr << todo->getX() << endl;
-	return todo;
 	
 }
 
-int Player::heuristic_mm(Move* m, Side s, Board *board)
+int Player::heuristic_mm(Side s, Board *board)
 {
     /*int numwhite = b.countWhite();
     int numblack = b.countBlack();  */  
     
-	Board *newb = board->copy();
-    newb->doMove(m, s);
-    
-    int newnumwhite = newb->countWhite();
-    int newnumblack = newb->countBlack();
+    int newnumwhite = board->countWhite();
+    int newnumblack = board->countBlack();
     int score = 0;
-    
-    delete newb;
-    
+   
 	if (s == BLACK)
     {
        // return newnumblack - numblack;
        score = newnumblack - newnumwhite;
     }
-    else{
+    else
+    {
 		//return newnumwhite - numwhite;
 		score = newnumwhite - newnumblack;
 	}
-        if((m->getX() == 0 || m->getX() == 7) && (m->getY() == 0 || m->getY() == 7)){
-		   score += 20;
-	   }
-	   else if((m->getX() == 0 || m->getX() == 1) && (m->getY() == 0 || m->getY() == 1)){
+    
+    vector <Move*> corners;
+    vector <Move*> nearcorners;
+    
+    corners.push_back(new Move(0, 0));
+    corners.push_back(new Move(0, 7));
+    corners.push_back(new Move(7, 0));
+    corners.push_back(new Move(7, 7));
+    
+    
+    nearcorners.push_back(new Move(1, 0));
+    nearcorners.push_back(new Move(0, 1));
+    nearcorners.push_back(new Move(1, 1));
+    
+    nearcorners.push_back(new Move(6, 7));
+    nearcorners.push_back(new Move(7, 6));
+    nearcorners.push_back(new Move(6, 6));
+   
+    nearcorners.push_back(new Move(0, 6));
+    nearcorners.push_back(new Move(1, 7));
+    nearcorners.push_back(new Move(1, 6));
+    
+    nearcorners.push_back(new Move(6, 0));
+    nearcorners.push_back(new Move(6, 1));
+    nearcorners.push_back(new Move(7, 1));
+    
+    for (unsigned int i = 0; i < corners.size(); i++)
+    {
+		if (board->get(s, corners[i]->getX(), corners[i]->getY()))
+			score += 20;
+	}
+	
+	for (unsigned int i = 0; i < nearcorners.size(); i++)
+	{
+		if (board->get(s, corners[i]->getX(), corners[i]->getY()))
 			score -= 20;
-		}
-		else if((m->getX() == 0 || m->getX() == 1) && (m->getY() == 6 || m->getY() == 7)){
-			score -= 20;
-		}
-		else if((m->getX() == 6 || m->getX() == 7) && (m->getY() == 0 || m->getY() == 1)){
-			score -= 20;
-		}
-		else if((m->getX() == 6 || m->getX() == 7) && (m->getY() == 6 || m->getY() == 7)){
-			score -= 20;
-		}
-		return score; 
+	}
+	
+	return score; 
 }
-
 int Player::heuristic(Move* m, Side s)
 {
     /*int numwhite = b.countWhite();
@@ -218,7 +269,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
 	
 	if (testingMinimax)
 	{
-		return minmax(opponentsMove, msLeft);
+		return minmaxmain(opponentsMove, msLeft);
 	}
 			
 			//cerr << "made opponent's move" << endl;

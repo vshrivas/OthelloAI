@@ -4,6 +4,7 @@
 #include <iostream>
 #include "common.h"
 #include "board.h"
+#include <vector>
 using namespace std;
 
 class Player {
@@ -14,9 +15,10 @@ public:
     
     Move *doMove(Move *opponentsMove, int msLeft);
 	int heuristic(Move* m, Side s);
-	int heuristic_mm(Move* m, Side s, Board *board);
+	int heuristic_mm(Side s, Board *board);
 	
-	Move* minmax(Move* oppenentMove, int msLeft);
+	int minmaxhelper(vector<Board *> boards, int ply, int currply);
+	Move * minmaxmain(Move * opponentMove, int msLeft);
     // Flag to tell if the player is running within the test_minimax context
     bool testingMinimax;
 };
