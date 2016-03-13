@@ -36,21 +36,25 @@ Player::~Player() {
 Move* Player::minmaxmain(Move* opponentMove, int msLeft){
 	vector <Move*> moves;
 	vector <int> scores;
-	cerr << "main function " << endl;
+	//cerr << "main function " << endl;
 	for(int x = 0; x < 8; x++){
 		for(int y =0; y < 8; y++){
-			cerr << "first for loop" << endl;
+			//cerr << "first for loop" << endl;
 			vector<Board*> boards;
 			Move* m = new Move(x,y);
 			Board* board = b.copy();
 			if(b.checkMove(m, s)){
-				cerr << "check move start" << endl;
+				//cerr << "check move start" << endl;
 				board->doMove(m, s);
 				boards.push_back(board);
 				moves.push_back(m);
-				scores.push_back(minmaxhelper(boards, 3, 0));
-				cerr << scores[scores.size()-1] << endl;
-				cerr << "check move end" << endl;
+				scores.push_back(minmaxhelper(boards, 2, 0));
+				//cerr << scores[scores.size()-1] << endl;
+				//cerr << "check move end" << endl;
+			}
+			else
+			{
+				//delete m;
 			}
 		}
 	}
@@ -59,7 +63,7 @@ Move* Player::minmaxmain(Move* opponentMove, int msLeft){
 		Move *todo = NULL;
 		for (unsigned int i = 0; i < scores.size(); i++)
 		{
-			cerr << "check max " << endl;
+			//cerr << "check max " << endl;
 			if (scores[i] > max)
 			{
 				max = scores[i];
@@ -80,32 +84,45 @@ int Player::minmaxhelper(vector<Board*> boards, int ply, int currply){
 	// base case at ply
 	if(currply == ply){
 		int min = 10000000;
-		cerr << "base case start " << endl;
+		//cerr << "base case start " << endl;
 		for (unsigned int i = 0; i < boards.size(); i++)
 		{
+			//cerr << "for loop in base case " << endl;
 			int score = heuristic_mm(s, boards[i]);
+			//cerr << "heuristic calculation is successfull" << endl;
 			if (score < min)
 			{
 				min = score;
+				//cerr << "finding score " << endl;
 			}
 		}
+		//cerr << "found a min " << endl;
 		return min;
 	}
 	else{
+		//cerr << "in else case " << endl;
 		vector <Board*> oppboards;
 		vector <Board*> ourboards;
 		for(unsigned int i=0; i < boards.size(); i++){
+			//cerr << "there are boards!!" << endl;
 			Side other = (s == BLACK) ? WHITE : BLACK;
 			for(int x = 0; x < 8; x++)
 			{
 				for(int y =0; y < 8; y++)
 				{
+					//cerr << "for loops in helper" << endl;
 					Move* oppm = new Move(x,y); // moves that opponent makes
 					if(boards[i]->checkMove(oppm, other))
 					{
+						//cerr << "check move in helper" << endl;
 						Board* oppboard = boards[i]->copy();
 						oppboard->doMove(oppm, other);
-						oppboards.push_back(oppboard);				
+						oppboards.push_back(oppboard);
+						//cerr << "found move in helper" << endl;				
+					}
+					else
+					{
+						//delete oppm;
 					}
 				}
 			}
@@ -117,17 +134,23 @@ int Player::minmaxhelper(vector<Board*> boards, int ply, int currply){
 			{
 				for(int y =0; y < 8; y++)
 				{
+					//cerr << "for loops to find our moves "<< endl;
 					Move* ourmove = new Move(x,y); // moves that we make
 					if(oppboards[i]->checkMove(ourmove, s))
 					{
+						//cerr << "found move for us " << endl;
 						Board* ourboard = oppboards[i]->copy();
 						ourboard->doMove(ourmove, s);
-						ourboards.push_back(ourboard);				
+						ourboards.push_back(ourboard);		
+						//cerr << "pushed move for us" << endl;		
+					}
+					else
+					{
+						//delete ourmove;
 					}
 				}
 			}
-		}
-		
+		}		
 		return minmaxhelper(ourboards, ply, currply+1);
 		
 		
@@ -143,7 +166,7 @@ int Player::heuristic_mm(Side s, Board *board)
     int newnumwhite = board->countWhite();
     int newnumblack = board->countBlack();
     int score = 0;
-   
+
 	if (s == BLACK)
     {
        // return newnumblack - numblack;
@@ -156,13 +179,16 @@ int Player::heuristic_mm(Side s, Board *board)
 	}
     
     vector <Move*> corners;
+    //cerr << "made corners " << endl;
     vector <Move*> nearcorners;
+    //cerr << "made nearcorners " << endl;
     
     corners.push_back(new Move(0, 0));
     corners.push_back(new Move(0, 7));
     corners.push_back(new Move(7, 0));
     corners.push_back(new Move(7, 7));
     
+    //cerr << "put values in corners" << endl;
     
     nearcorners.push_back(new Move(1, 0));
     nearcorners.push_back(new Move(0, 1));
@@ -180,16 +206,35 @@ int Player::heuristic_mm(Side s, Board *board)
     nearcorners.push_back(new Move(6, 1));
     nearcorners.push_back(new Move(7, 1));
     
+    //cerr << "put values in newcorners" << endl;
+    
+    //cerr << "corner size " << corners.size() << endl;
+    //cerr << "near corner size " << nearcorners.size() << endl;
+    
     for (unsigned int i = 0; i < corners.size(); i++)
     {
+		//cerr << "in corners for loop" << endl;
+		//cerr << "corner x " << corners[i]->getX() << "corner y " << corners[i]->getY() << endl;
+		//cerr << "boolean get " << board->get(s, corners[i]->getX(), corners[i]->getY()) << endl;
 		if (board->get(s, corners[i]->getX(), corners[i]->getY()))
+		{
+			//cerr << "corner piece found" << endl;
 			score += 20;
+		}
 	}
-	
+	//cerr << "done with corners " << endl;
 	for (unsigned int i = 0; i < nearcorners.size(); i++)
 	{
-		if (board->get(s, corners[i]->getX(), corners[i]->getY()))
+		//cerr << "in near corners for loop" << endl;
+		//cerr << "nearcorners x " << nearcorners[i]->getX() << "nearcorner y " << nearcorners[i]->getY() << endl;
+		//cerr << "boolean get " << board->get(s, nearcorners[i]->getX(), nearcorners[i]->getY()) << endl;
+		
+		//cerr << "boolean get 6 " << board->get(s, 6, 6) << endl;
+		if (board->get(s, nearcorners[i]->getX(), nearcorners[i]->getY()))
+		{
+			//cerr << "near corner piece found" << endl;
 			score -= 20;
+		}
 	}
 	
 	return score; 
