@@ -19,6 +19,10 @@ public:
 	
 	int minmaxhelper(vector<Board *> boards, int ply, int currply);
 	Move * minmaxmain(Move * opponentMove, int msLeft);
+	
+	Move* minmaxmainfinal(Move* opponentMove, int msLeft);
+	int minmaxhelperfinal(Board* board, int ply, int currply);
+	
     // Flag to tell if the player is running within the test_minimax context
     bool testingMinimax;
 };

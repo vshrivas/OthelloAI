@@ -32,19 +32,95 @@ Player::Player(Side side) {
 Player::~Player() {
 	//delete b;
 }
+Move* Player::minmaxmainfinal(Move* opponentMove, int msLeft){
+	vector <Move*> moves;
+	vector <int> scores;
+	for(int x=0; x < 8; x++){
+		for(int y=0; y < 8; y++){
+			Move* m = new Move(x,y);
+			if(b.checkMove(m,s)){
+				Board* board = b.copy();
+				board->doMove(m, s);
+				moves.push_back(m);
+				int score = minmaxhelperfinal(board, 2, 0);
+				scores.push_back(score);
+			}
+		}
+	}
+	int maxscore = -1000000;
+	Move* todo = NULL;
+	for(unsigned int i = 0; i < scores.size(); i++){
+		if(scores[i] > maxscore){
+			maxscore = scores[i];
+			todo = moves[i];
+		}
+	} 
+	if (todo != NULL)
+	{
+		b.doMove(todo, s);
+	}
+		
+	cerr << todo->getX() << todo->getY() << endl;
+	return todo;
+}
+
+int Player::minmaxhelperfinal(Board* board, int ply, int currply){
+	if(currply == ply){
+		int score = heuristic_mm(s, board);
+		return score;
+	}
+	else{
+		vector <int> scores;
+		for(int x=0; x < 8; x++){
+			for(int y=0; y < 8; y++){
+				Move* m = new Move(x,y);
+				if(board->checkMove(m,s)){
+					Board* newboard = board->copy();
+					newboard->doMove(m, s);
+					//moves.push_back(m);
+					int score = minmaxhelperfinal(newboard, ply, currply + 1);
+					scores.push_back(score);
+				}
+			}
+		}
+		if(currply == ply - 1){
+			int min = 1000000;
+			for(unsigned int i=0; i < scores.size(); i++){
+				if(scores[i] < min){
+					min = scores[i];
+				}
+			}
+			return min;
+		}
+		else{
+			int max = -100000;
+			for(unsigned int i=0; i < scores.size(); i++){
+				if(scores[i] > max){
+					max = scores[i];
+				}
+			}
+			return max;
+		}
+	}
+}
 
 Move* Player::minmaxmain(Move* opponentMove, int msLeft){
 	vector <Move*> moves;
 	vector <int> scores;
 	//cerr << "main function " << endl;
+	// iterate through every square on the board
 	for(int x = 0; x < 8; x++){
-		for(int y =0; y < 8; y++){
+		for(int y = 0; y < 8; y++){
 			//cerr << "first for loop" << endl;
-			vector<Board*> boards;
+			// create a new move
 			Move* m = new Move(x,y);
-			Board* board = b.copy();
+			// if the move is valid
 			if(b.checkMove(m, s)){
+				// copy the board
+				vector<Board*> boards;
+				Board* board = b.copy();
 				//cerr << "check move start" << endl;
+				// make the move on the board
 				board->doMove(m, s);
 				boards.push_back(board);
 				moves.push_back(m);
@@ -75,7 +151,7 @@ Move* Player::minmaxmain(Move* opponentMove, int msLeft){
 			b.doMove(todo, s);
 		}
 		
-		cerr << todo->getX() << endl;
+		cerr << todo->getX() << todo->getY() << endl;
 		return todo;
 	
 }
@@ -314,7 +390,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
 	
 	if (testingMinimax)
 	{
-		return minmaxmain(opponentsMove, msLeft);
+		return minmaxmainfinal(opponentsMove, msLeft);
 	}
 			
 			//cerr << "made opponent's move" << endl;
